@@ -1,0 +1,28 @@
+http:
+  routers:
+    dashboard:
+      rule: "Host(`monitor.tccauley.dev`)"
+      entryPoints:
+        - "websecure"
+      service: api@internal
+      middlewares:
+        #        - auth
+        - redirect
+
+  middlewares:
+    redirect:
+      redirectScheme:
+        permanent: true
+        scheme: https
+        port: 443
+#    auth:
+#      basicAuth:
+#        users:
+#          - "admin:$apr1$hfxvyug9$Jl6u78o2ZQXCQeSUZ/dqV/"
+
+#tls:
+#  stores:
+#    default:
+#      defaultCertificate:
+#        certFile: tccauley.dev.pem
+#        keyFile: tccauley.dev.key

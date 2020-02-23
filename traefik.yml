@@ -1,14 +1,5 @@
-## STATIC CONFIGURATION
-
 log:
   level: DEBUG
-
-api:
-  dashboard: true
-  insecure: true
-  debug: true
-
-accessLog: {}
 
 entryPoints:
   web:
@@ -19,16 +10,28 @@ entryPoints:
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
+    watch: true
     exposedByDefault: false
+    network: traefik_public
+  #    tls:
+  #      cert: tccauley.dev.pem
+  #      key: tccauley.dev.key
   file:
-    filename: "traefik-dynamic.yml"
+    directory: "/dynamic"
+    watch: true
+
+api:
+  dashboard: true
+  debug: true
+
+accessLog: {}
 
 certificatesResolvers:
-  lets-encr:
+  letsencr:
     acme:
       email: clint.cauley@gmail.com
-      #caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      caServer: https://acme-staging-v02.api.letsencrypt.org/directory
       storage: acme.json
       dnsChallenge:
-        provider: digitalocean
+        provider: cloudflare
         delayBeforeCheck: 0
