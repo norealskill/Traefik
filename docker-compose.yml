@@ -27,28 +27,56 @@ services:
             #- "./dynamic:/dynamic"
         labels:
             - "traefik.enable=true"
+
+            # Dashboard
             - "traefik.http.routers.traefik.rule=Host(`monitor.tccauley.dev`)"
             - "traefik.http.routers.traefik.service=api@internal"
             - "traefik.http.routers.traefik.middlewares=auth"
             - "traefik.http.routers.traefik.tls.certresolver=letsencr"
             - "traefik.http.routers.traefik.entrypoints=websecure"
-            - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$hfxvyug9$$Jl6u78o2ZQXCQeSUZ/dqV/"
+
+            # Redirect HTTP -> HTTPS
             - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
             - "traefik.http.routers.http-catchall.entrypoints=web"
             - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+
+            # Middlewares
+            - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$hfxvyug9$$Jl6u78o2ZQXCQeSUZ/dqV/"
             - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
-#  nginx:
-#    image: nginx:1.17.8-alpine
-#    container_name: nginx
-#    hostname: nginx
-#    ports:
-#      - "50081:443"
-#    volumes:
-#      - "./default.conf:/etc/nginx/conf.d/default.conf"
-#      - "./nginx/:/usr/share/nginx/html/graphql/"
-#    labels:
-#      - "traefik.enable=true"
+    graphql:
+        image: nginx:1.17.8-alpine
+        container_name: graphql
+        hostname: graphql
+        ports:
+            - "50081:443"
+        volumes:
+            - "./default.conf:/etc/nginx/conf.d/default.conf"
+            - "./nginx/:/usr/share/nginx/html/graphql/"
+        labels:
+            - "traefik.enable=true"
+
+            - "traefik.http.routers.graphql.rule=PathPrefix(`/graphql`)"
+            - "traefik.http.routers.graphql.entrypoints=websecure"
+            - "traefik.http.routers.graphql.tls=true"
+            - "traefik.http.routers.graphql.tls.certresolver=letsencr"
+
+    blog:
+        image: nginx:1.17.8-alpine
+        container_name: blog
+        hostname: blog
+        ports:
+            - "50082:443"
+        volumes:
+            - "./default.conf:/etc/nginx/conf.d/default.conf"
+            - "./nginx/index.html:/usr/share/nginx/html/index.html"
+        labels:
+            - "traefik.enable=true"
+
+            - "traefik.http.routers.blog.rule=Host(`blog.tccauley.dev`)"
+            - "traefik.http.routers.blog.entrypoints=websecure"
+            - "traefik.http.routers.blog.tls=true"
+            - "traefik.http.routers.blog.tls.certresolver=letsencr"
 
 networks:
     default:
