@@ -13,12 +13,9 @@ providers:
         watch: true
         exposedByDefault: false
         network: traefik_public
-    #    tls:
-    #      cert: tccauley.dev.pem
-    #      key: tccauley.dev.key
-    file:
-        directory: "/dynamic"
-        watch: true
+    #file:
+    #    directory: "/dynamic"
+    #    watch: true
 
 api:
     dashboard: true

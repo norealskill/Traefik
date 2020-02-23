@@ -5,20 +5,39 @@ services:
         image: "traefik:v2.1"
         container_name: "traefik"
         hostname: "traefik"
+        command:
+            - --entrypoints.web.address=:80
+            - --entrypoints.websecure.address=:443
+            - --providers.docker
+            - --api
+            - --certificatesresolvers.letsencr.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+            - --certificatesresolvers.letsencr.acme.email=clint.cauley@gmail.com
+            - --certificatesresolvers.letsencr.acme.storage=/acme.json
+            - --certificatesresolvers.letsencr.acme.tlschallenge=true
         env_file:
             - .env
         ports:
             - "80:80"
             - "443:443"
-            - "8080:8080"
         volumes:
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
-            - "./traefik.yml:/traefik.yml:ro"
+            #- "./traefik.yml:/traefik.yml:ro"
             - "./tccauley.dev.pem:/tccauley.dev.pem:ro"
             - "./tccauley.dev.key:/tccauley.dev.key:ro"
-            - "./dynamic:/dynamic"
+            #- "./dynamic:/dynamic"
         labels:
             - "traefik.enable=true"
+            - "traefik.http.routers.traefik.rule=Host(`monitor.tccauley.dev`)"
+            - "traefik.http.routers.traefik.service=api@internal"
+            - "traefik.http.routers.traefik.middlewares=auth"
+            - "traefik.http.routers.traefik.tls.certresolver=letsencr"
+            - "traefik.http.routers.traefik.entrypoints=websecure"
+            - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$hfxvyug9$$Jl6u78o2ZQXCQeSUZ/dqV/"
+            - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+            - "traefik.http.routers.http-catchall.entrypoints=web"
+            - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+            - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
 #  nginx:
 #    image: nginx:1.17.8-alpine
 #    container_name: nginx

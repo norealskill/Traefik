@@ -6,7 +6,7 @@ http:
                 - "websecure"
             service: api@internal
             middlewares:
-                #        - auth
+                - auth
                 - redirect
 
     middlewares:
@@ -18,10 +18,4 @@ http:
         auth:
             basicAuth:
                 users:
-                    - "admin:$apr1$hfxvyug9$Jl6u78o2ZQXCQeSUZ/dqV/"
-#tls:
-#  stores:
-#    default:
-#      defaultCertificate:
-#        certFile: tccauley.dev.pem
-#        keyFile: tccauley.dev.key
+                    - "admin:$$apr1$$hfxvyug9$$Jl6u78o2ZQXCQeSUZ/dqV/"
