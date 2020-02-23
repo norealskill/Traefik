@@ -15,11 +15,10 @@ http:
         permanent: true
         scheme: https
         port: 443
-#    auth:
-#      basicAuth:
-#        users:
-#          - "admin:$apr1$hfxvyug9$Jl6u78o2ZQXCQeSUZ/dqV/"
-
+    auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$hfxvyug9$Jl6u78o2ZQXCQeSUZ/dqV/"
 #tls:
 #  stores:
 #    default:
