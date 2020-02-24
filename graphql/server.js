@@ -109,6 +109,6 @@ app.use(
         extensions
     })
 );
-app.listen(4000);
+app.listen(50081);
 // eslint-disable-next-line no-console
-console.log("Running a GraphQL API server at https://localhost:4000/graphql");
+console.log("Running a GraphQL API server at https://localhost:50081/graphql");

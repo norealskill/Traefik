@@ -10,6 +10,9 @@ services:
             - --entrypoints.websecure.address=:443
             - --providers.docker
             - --api
+            - --accesslog=true
+            - --metrics=true
+            - --metrics.prometheus=true
             - --certificatesresolvers.letsencr.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
             - --certificatesresolvers.letsencr.acme.email=clint.cauley@gmail.com
             - --certificatesresolvers.letsencr.acme.storage=/acme.json
@@ -19,6 +22,7 @@ services:
         ports:
             - "80:80"
             - "443:443"
+            - "8080:8080"
         volumes:
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
             #- "./traefik.yml:/traefik.yml:ro"
@@ -45,21 +49,28 @@ services:
             - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
     graphql:
-        image: nginx:1.17.8-alpine
+        image: node:13.8.0
         container_name: graphql
         hostname: graphql
+        working_dir: /home/node/app
+        command: sh -c "npm install && npm start"
         ports:
             - "50081:443"
         volumes:
-            - "./default.conf:/etc/nginx/conf.d/default.conf"
-            - "./nginx/:/usr/share/nginx/html/graphql/"
+            - "./graphql/:/home/node/app"
+        depends_on:
+            - traefik
         labels:
             - "traefik.enable=true"
-
+            # GraphQL
             - "traefik.http.routers.graphql.rule=PathPrefix(`/graphql`)"
+            - "traefik.http.services.graphql.loadbalancer.server.port=50081"
             - "traefik.http.routers.graphql.entrypoints=websecure"
             - "traefik.http.routers.graphql.tls=true"
             - "traefik.http.routers.graphql.tls.certresolver=letsencr"
+
+            # Middlewares
+            #- "traefik.http.middlewares.graphql.stripprefix.prefixes=/graphql"
 
     blog:
         image: nginx:1.17.8-alpine
@@ -69,7 +80,9 @@ services:
             - "50082:443"
         volumes:
             - "./default.conf:/etc/nginx/conf.d/default.conf"
-            - "./nginx/index.html:/usr/share/nginx/html/index.html"
+            #- "./nginx/index.html:/usr/share/nginx/html/index.html"
+        depends_on:
+            - traefik
         labels:
             - "traefik.enable=true"
 
@@ -77,6 +90,28 @@ services:
             - "traefik.http.routers.blog.entrypoints=websecure"
             - "traefik.http.routers.blog.tls=true"
             - "traefik.http.routers.blog.tls.certresolver=letsencr"
+
+    metrics:
+        image: prom/prometheus:v2.16.0
+        container_name: metrics
+        hostname: metrics
+        ports:
+            - "9090:9090"
+        volumes:
+            - "./prometheus/:/etc/prometheus"
+            - "/var/lib/docker/volumes/prom-vol/_data:/prometheus/"
+        depends_on:
+            - traefik
+            - blog
+            - graphql
+        labels:
+            - "traefik.enable=true"
+
+            - "traefik.http.routers.metrics.rule=PathPrefix(`/metrics`) || PathPrefix(`/graph`) || PathPrefix(`/alerts`) || PathPrefix(`/flags`)|| PathPrefix(`/status`) || PathPrefix(`/config`) || PathPrefix(`/rules`) || PathPrefix(`/targets`) || PathPrefix(`/service-discovery`) || PathPrefix(`/new/graph`)"
+            - "traefik.http.routers.metrics.entrypoints=websecure"
+            - "traefik.http.routers.metrics.tls=true"
+            - "traefik.http.routers.metrics.tls.certresolver=letsencr"
+            - "traefik.http.routers.metrics.middlewares=auth"
 
 networks:
     default:
