@@ -22,7 +22,6 @@ services:
         ports:
             - "80:80"
             - "443:443"
-            - "8080:8080"
         volumes:
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
             #- "./traefik.yml:/traefik.yml:ro"
@@ -62,15 +61,13 @@ services:
             - traefik
         labels:
             - "traefik.enable=true"
+
             # GraphQL
             - "traefik.http.routers.graphql.rule=PathPrefix(`/graphql`)"
             - "traefik.http.services.graphql.loadbalancer.server.port=50081"
             - "traefik.http.routers.graphql.entrypoints=websecure"
             - "traefik.http.routers.graphql.tls=true"
             - "traefik.http.routers.graphql.tls.certresolver=letsencr"
-
-            # Middlewares
-            #- "traefik.http.middlewares.graphql.stripprefix.prefixes=/graphql"
 
     blog:
         image: nginx:1.17.8-alpine
@@ -99,7 +96,7 @@ services:
             - "9090:9090"
         volumes:
             - "./prometheus/:/etc/prometheus"
-            - "/var/lib/docker/volumes/prom-vol/_data:/prometheus/"
+            - "prom-storage:/prometheus/:rw"
         depends_on:
             - traefik
             - blog
@@ -107,11 +104,42 @@ services:
         labels:
             - "traefik.enable=true"
 
-            - "traefik.http.routers.metrics.rule=PathPrefix(`/metrics`) || PathPrefix(`/graph`) || PathPrefix(`/alerts`) || PathPrefix(`/flags`)|| PathPrefix(`/status`) || PathPrefix(`/config`) || PathPrefix(`/rules`) || PathPrefix(`/targets`) || PathPrefix(`/service-discovery`) || PathPrefix(`/new/graph`)"
+            - "traefik.http.routers.metrics.rule=Host(`prom.tccauley.dev`)"
+            - "traefik.http.routers.metrics.rule=PathPrefix(`/metrics`)"
             - "traefik.http.routers.metrics.entrypoints=websecure"
             - "traefik.http.routers.metrics.tls=true"
             - "traefik.http.routers.metrics.tls.certresolver=letsencr"
             - "traefik.http.routers.metrics.middlewares=auth"
+            - "traefik.http.services.metrics.loadbalancer.server.port=9090"
+
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        hostname: grafana
+        user: "1000"
+        env_file:
+            - .env
+        ports:
+            - "3000:443"
+        volumes:
+            - "./grafana/.env:/.env"
+            - "grafana-storage:/var/lib/grafana:rw"
+        depends_on:
+            - traefik
+            - metrics
+        labels:
+            - "traefik.enable=true"
+
+            - "traefik.http.routers.grafana.rule=Host(`metrics.tccauley.dev`)"
+            - "traefik.http.routers.grafana.entrypoints=websecure"
+            - "traefik.http.routers.grafana.tls=true"
+            - "traefik.http.routers.grafana.tls.certresolver=letsencr"
+
+            - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+volumes:
+    grafana-storage:
+    prom-storage:
 
 networks:
     default:
