@@ -2,4 +2,3 @@
 acme/
 *.key
 *.pem
-prometheus/
