@@ -11,7 +11,6 @@ services:
             - --providers.docker
             - --api
             - --accesslog=true
-            - --metrics=true
             - --metrics.prometheus=true
             - --certificatesresolvers.letsencr.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
             - --certificatesresolvers.letsencr.acme.email=clint.cauley@gmail.com
@@ -105,11 +104,11 @@ services:
             - "traefik.enable=true"
 
             - "traefik.http.routers.metrics.rule=Host(`prom.tccauley.dev`)"
-            - "traefik.http.routers.metrics.rule=PathPrefix(`/metrics`)"
+            #- "traefik.http.routers.metrics.rule=PathPrefix(`/metrics`)"
             - "traefik.http.routers.metrics.entrypoints=websecure"
             - "traefik.http.routers.metrics.tls=true"
             - "traefik.http.routers.metrics.tls.certresolver=letsencr"
-            - "traefik.http.routers.metrics.middlewares=auth"
+            #- "traefik.http.routers.metrics.middlewares=auth"
             - "traefik.http.services.metrics.loadbalancer.server.port=9090"
 
     grafana:
@@ -118,7 +117,7 @@ services:
         hostname: grafana
         user: "1000"
         env_file:
-            - .env
+            - ./grafana/.env
         ports:
             - "3000:443"
         volumes:
