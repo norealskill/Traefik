@@ -2,3 +2,4 @@
 acme/
 *.key
 *.pem
+*.sh
