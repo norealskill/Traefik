@@ -12,6 +12,7 @@ type RandomDie {
 type Query {
     getDie(numSides: Int): RandomDie
     getMessage(id: ID!): Message
+    getHealth: String!
 }
 
 input MessageInput {
@@ -84,6 +85,9 @@ const root = {
 
         fakeDatabase[id] = input;
         return new Message(id, input);
+    },
+    getHealth: () => {
+        return `Everything is super`;
     }
 };
 
@@ -111,4 +115,4 @@ app.use(
 );
 app.listen(50081);
 // eslint-disable-next-line no-console
-console.log("Running a GraphQL API server at https://localhost:50081/graphql");
+console.log("Running a GraphQL API server at https://tccauley.dev/graphql");

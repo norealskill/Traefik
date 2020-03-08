@@ -17,3 +17,8 @@ scrape_configs:
     static_configs:
       - targets:
           - traefik:8080
+  - job_name: statping
+    bearer_token: "0d779cbe2db87f0383c26f271fd5441ff8661273"
+    static_configs:
+      - targets:
+          - statping:8081

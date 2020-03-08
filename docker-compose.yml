@@ -136,9 +136,31 @@ services:
 
             - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
+    statping:
+        image: hunterlong/statping
+        container_name: status
+        restart: always
+        env_file:
+            - ./statping/.env
+        ports:
+            - "8080:443"
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+            - "statping-storage:/app:rw"
+        depends_on:
+            - traefik
+        labels:
+            - "traefik.http.routers.statping.rule=Host(`status.tccauley.dev`)"
+            - "traefik.http.routers.statping.entrypoints=websecure"
+            - "traefik.http.routers.statping.tls=true"
+            - "traefik.http.routers.statping.tls.certresolver=letsencr"
+
+            - "traefik.http.services.statping.loadbalancer.server.port=8080"
+
 volumes:
     grafana-storage:
     prom-storage:
+    statping-storage:
 
 networks:
     default:
