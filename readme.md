@@ -1,7 +1,7 @@
 # tccauley.dev
 
 ### Current Container Infrastructure
-
+[VS Code Mermaid Preview Extension](https://marketplace.visualstudio.com/items?itemName=vstirbu.vscode-mermaid-preview) to view properly
 ```mermaid
 graph TD
     A["Traefik"]
