@@ -47,15 +47,18 @@ services:
             - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
     graphql:
-        image: node:13.8.0
+        image: localhost:5000/graphql/local
         container_name: graphql
         hostname: graphql
         working_dir: /home/node/app
         command: sh -c "npm install && npm start"
+        env_file:
+            - ./graphql/.env
         ports:
             - "50081:443"
         volumes:
             - "./graphql/:/home/node/app"
+            - "./graphql/wallet_tccauleydev/:/wallet"
         depends_on:
             - traefik
         labels:

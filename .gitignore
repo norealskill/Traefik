@@ -1,4 +1,5 @@
 .env
+wallet_tccauleydev/
 acme/
 *.key
 *.pem

@@ -1,6 +1,10 @@
+require("dotenv").config();
+
 const express = require("express");
 const graphqlHTTP = require("express-graphql");
 const { buildSchema } = require("graphql");
+const oraceldb = require("oracledb");
+const dbConfig = require("./dbconfig");
 
 const schema = buildSchema(`
 type RandomDie {
@@ -116,3 +120,35 @@ app.use(
 app.listen(50081);
 // eslint-disable-next-line no-console
 console.log("Running a GraphQL API server at https://tccauley.dev/graphql");
+
+async function run() {
+    let connection;
+
+    try {
+        let sql, binds, options, result;
+
+        connection = await oraceldb.getConnection(dbConfig);
+        const stmts = ["select * from tccauley.blog_posts"];
+
+        for (const s of stmts) {
+            try {
+                const result = await connection.execute(s);
+                console.log(result);
+            } catch (e) {
+                if (express.errorNum != 942) console.error(e);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
+}
+
+run();
