@@ -30,7 +30,7 @@ graph TD
 	- [ ] Style status page
 	- [ ] Configure alerts
 - [x] GraphQL
-	- [x] Builder custom Docker image
+	- [x] Build custom Docker image
 		- [x] Install npm/nodejs
 		- [x] Install instantclient19.3-basic
 		- [x] Add server.js/package.json
